@@ -2,6 +2,7 @@ module Data.Pair where
 
 import Prelude
 
+import Test.QuickCheck.Arbitrary (class Coarbitrary, class Arbitrary, coarbitrary, arbitrary)
 import Control.Comonad (class Comonad)
 import Control.Extend (class Extend)
 import Control.Lazy (class Lazy, defer)
@@ -42,8 +43,12 @@ first f (Pair a b) = Pair (f a) b
 second :: forall a. (a -> a) -> Pair a -> Pair a
 second f (Pair a b) = Pair a (f b)
 
+-- | Swaps the elements in a pair.
+swap :: forall a. Pair a -> Pair a
+swap (Pair a b) = Pair b a
+
 instance showPair :: Show a => Show (Pair a) where
-    show (Pair a b) = "Pair " <> show a <> " " <> show b
+    show (Pair a b) = "(Pair " <> show a <> " " <> show b <> ")"
 
 instance eqPair :: Eq a => Eq (Pair a) where
     eq (Pair a b) (Pair c d) = a == c && b == d
@@ -83,7 +88,13 @@ instance lazyPair :: (Lazy a) => Lazy (Pair a) where
     defer f = Pair (defer (\_ -> fst (f unit))) (defer (\_ -> snd (f unit)))
 
 instance extendPair :: Extend Pair where
-    extend f p = let n = f p in Pair n n
+    extend f p = Pair (f p) (f (swap p))
 
 instance comonadPair :: Comonad Pair where
-    extract (Pair a _) = a
+    extract (Pair a b) = a
+
+instance arbitraryPair :: Arbitrary a => Arbitrary (Pair a) where
+    arbitrary = Pair <$> arbitrary <*> arbitrary
+
+instance coarbitraryPair :: Coarbitrary a => Coarbitrary (Pair a) where
+    coarbitrary (Pair a b) = coarbitrary b <<< coarbitrary a 
