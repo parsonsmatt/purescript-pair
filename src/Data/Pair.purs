@@ -3,15 +3,17 @@ module Data.Pair where
 import Prelude
 
 import Control.Comonad (class Comonad)
-import Control.Lazy (class Lazy, defer)
 import Control.Extend (class Extend)
-import Data.Monoid (class Monoid, mempty)
+import Control.Lazy (class Lazy, defer)
 import Data.Foldable (class Foldable)
+import Data.Monoid (class Monoid, mempty)
 import Data.Traversable (class Traversable, sequenceDefault)
 import Data.Tuple as T
 
+-- | A pair of objects of the same type.
 data Pair a = Pair a a
 
+-- | A type class representing having a first field and extracting it.
 class HasFst t a where
     fst :: t -> a
 
@@ -21,6 +23,8 @@ instance hasFstPair :: HasFst (Pair a) a where
 instance hasFstTuple :: HasFst (T.Tuple a b) a where
     fst = T.fst
 
+-- | A type class representing having a second field with an extraction 
+-- | operator.
 class HasSnd t a where
     snd :: t -> a
 
@@ -30,9 +34,11 @@ instance hasSndPair :: HasSnd (Pair a) a where
 instance hasSndTuple :: HasSnd (T.Tuple a b) b where
     snd = T.snd
 
+-- | Map a function over the first field of a pair.
 first :: forall a. (a -> a) -> Pair a -> Pair a
 first f (Pair a b) = Pair (f a) b
 
+-- | Map a function over the second field of a pair.
 second :: forall a. (a -> a) -> Pair a -> Pair a
 second f (Pair a b) = Pair a (f b)
 
